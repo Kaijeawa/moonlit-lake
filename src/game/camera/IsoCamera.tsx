@@ -9,7 +9,7 @@ const CAMERA_ELEVATION_DEG = 50
 export function IsoCamera() {
   const rad = (CAMERA_ELEVATION_DEG * Math.PI) / 180
   const y = Math.sin(rad) * CAMERA_DISTANCE
-  const horizontal = Math.cos(rad) * CAMERA_DISTANCE
+  const horizontal = (Math.cos(rad) * CAMERA_DISTANCE) / Math.SQRT2
 
   return (
     <PerspectiveCamera
