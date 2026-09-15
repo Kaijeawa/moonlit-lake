@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import type { Vector3 } from 'three'
 import { Island } from './game/world/Island'
 import { Water } from './game/world/Water'
+import { FishingSpot } from './game/world/FishingSpot'
 import { IsoCamera } from './game/camera/IsoCamera'
 import { Player } from './game/player/Player'
 import { usePlayerController } from './game/player/usePlayerController'
@@ -51,6 +52,7 @@ function Scene({ movementLocked }: { movementLocked: boolean }) {
       <directionalLight position={[10, 15, 5]} intensity={1.2} castShadow />
       <Island onClick={handleGroundClick} />
       <Water />
+      <FishingSpot id="dock" position={[5, 1.05, 3]} playerPositionRef={positionRef} />
       <Player positionRef={positionRef} />
     </>
   )
