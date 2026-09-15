@@ -78,8 +78,9 @@ Vitest) plus `zustand` (already installed in M0, unused until now).
   (`npm run build` runs `tsc -b`, which is the authoritative check).
 - `strict: true` is on in both tsconfigs (set in M0) — all new code must
   satisfy it, not silently disable it.
-- Every commit message ends with the line
-  `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`.
+- Commit messages carry NO `Co-Authored-By` trailer (user's request,
+  2026-09-16 — he does not want an AI contributor shown on the GitHub
+  repo). Plain conventional messages only.
 
 ---
 
