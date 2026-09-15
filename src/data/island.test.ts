@@ -6,6 +6,8 @@ describe('buildIslandGeometry', () => {
   it('produces one merged BufferGeometry for the whole grid', () => {
     const geometry = buildIslandGeometry(ISLAND_GRID)
     expect(geometry).toBeInstanceOf(THREE.BufferGeometry)
+    // useGroups=false must produce a groupless geometry — proof of single-draw-call behavior
+    expect(geometry.groups.length).toBe(0)
   })
 
   it('has a vertex count matching 24 vertices per box (one box per tile)', () => {

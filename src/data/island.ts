@@ -46,6 +46,9 @@ export function buildIslandGeometry(grid: IslandTile[]): THREE.BufferGeometry {
   })
 
   const merged = mergeGeometries(geometries, false)
+  if (!merged) {
+    throw new Error('Failed to merge island tile geometries — check for mismatched vertex attributes')
+  }
   merged.computeVertexNormals()
   return merged
 }
