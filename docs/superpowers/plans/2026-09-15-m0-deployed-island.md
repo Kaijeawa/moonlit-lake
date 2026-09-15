@@ -272,7 +272,12 @@ tests for v1; verification is the manual check in Task 6, Step 3.
 ```tsx
 // src/game/world/Island.tsx
 import { useMemo } from 'react'
-import * as THREE from 'three'
+// Not `import * as THREE from 'three'` — geometry is a plain BufferGeometry
+// value here (no other THREE.* usage), and R3F's JSX intrinsics (`mesh`,
+// `meshStandardMaterial`) only type-check once some import in this file
+// loads @react-three/fiber's JSX augmentation. A type-only import does that
+// without pulling in a real dependency the file doesn't otherwise need.
+import type {} from '@react-three/fiber'
 import { ISLAND_GRID, buildIslandGeometry } from '../../data/island'
 
 export function Island() {
