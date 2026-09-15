@@ -40,12 +40,17 @@ before this spec — not re-litigated here.
 
 - 1 lake, 3 fishing spots
 - 10–12 fish species, gated by: spot + time-of-day (day/night only, no
-  weather in v1)
-- 3 rod tiers (upgradeable via shop)
+  weather in v1) + minimum rod tier (each fish has a `minRod`; higher-tier
+  rods unlock more species — the mechanism that drives the collection loop)
+- 3 rod tiers (upgradeable via shop; effect is purely the fish-gate above —
+  no other stat changes for v1, e.g. no catch-rate or minigame-difficulty
+  scaling)
 - 1 minigame: timing bar (red/green zone, tap in zone for Perfect/Good/Miss)
 - Fish Collection Book (per-species: caught y/n, weight, spot, time caught)
 - Shop: sell fish for coins, buy rod upgrades
-- 5 quests
+- 5 quests, given by one NPC (matching the reference screenshot's quest-giver).
+  Objectives limited to `catch N of species X` / `catch N at spot Y`, reward
+  = coins. Dialogue is a static text panel (no branching, no voice).
 - Day/night cycle (continuous, ambient lighting only — no weather system)
 - Desktop-first, click/tap-to-move input (mobile-compatible interaction
   model from day one; mobile performance tuning is a later milestone, not
@@ -65,6 +70,10 @@ before this spec — not re-litigated here.
 - Cloud save / accounts (Supabase or otherwise)
 - Mobile performance optimization (LOD, draw-call budgets for low-end
   devices)
+- Bait system (no bait item/selection UI; fish gating is spot + time + rod
+  tier only — a bait dimension is deferred, not designed)
+- Branching/voiced NPC dialogue, multiple NPCs — v1 has exactly one
+  quest-giver NPC with static text panels
 
 Anything in this list that seems necessary mid-build is a scope-creep
 signal — flag it, don't silently add it.
@@ -79,8 +88,9 @@ D:\moonlit-lake\
 │   │   ├── player/        (Player.tsx, usePlayerController hook)
 │   │   ├── fishing/       (FishingBar.tsx, resolveCatch.ts)
 │   │   ├── economy/       (sellFish.ts, buyRod.ts, claimQuestReward.ts)
+│   │   ├── npc/            (QuestGiver.tsx — static mesh + proximity trigger)
 │   │   └── camera/        (IsoCamera.tsx)
-│   ├── ui/                 (QuestPanel, Inventory, CollectionBook, Shop, HUD — React, siblings of <Canvas>, not inside it)
+│   ├── ui/                 (QuestPanel, Inventory, CollectionBook, Shop, HUD, DialoguePanel — React, siblings of <Canvas>, not inside it)
 │   ├── stores/              (usePlayerStore, useFishingStore, useInventoryStore, useWorldStore, useQuestStore — each gets reset() for test isolation)
 │   ├── data/                 (fish.ts, rods.ts, quests.ts, island.ts, assets.ts)
 │   └── lib/                  (persistence.ts)
@@ -113,7 +123,7 @@ D:\moonlit-lake\
 ## 5. Data Flow
 
 ```
-Input (click/tap raycast, or WASD)
+Input (click/tap raycast — the only movement input for v1, no WASD)
   → raycast filters hits to face.normal.y > 0.7 on a `walkable`-tagged layer
     (prevents clicking a cliff face and lerping through terrain)
   → usePlayerController (useFrame) moves player ref via straight-line lerp
@@ -121,14 +131,19 @@ Input (click/tap raycast, or WASD)
   → IsoCamera lerps to follow player ref (perspective camera, fixed ~50°
     elevation — matches reference screenshot foreshortening/reflections,
     not orthographic)
-  → proximity check each frame: on ENTER/EXIT transition only (guarded,
-    not every frame) writes a `nearSpot` flag to useFishingStore
+  → proximity check each frame, ENTER/EXIT transition only (guarded, not
+    every frame): near a fishing spot writes `nearSpot` to useFishingStore;
+    near the QuestGiver NPC writes `nearNpc` to useQuestStore — same
+    discrete-event pattern
   → player presses "Fish" → FishingBar opens (React overlay), pointer
     position updates via ref/rAF, setState fires only on Perfect/Good/Miss
     result
-  → result → resolveCatch.ts orchestrates: inventory.addFish(),
-    quest.onFishCaught(), world.onFishCaught() — in that order, stores
-    never call each other directly
+  → player presses "Talk" near NPC → DialoguePanel opens (static text,
+    no branching), showing available/in-progress/completed quests
+  → catch result → resolveCatch.ts orchestrates: inventory.addFish(),
+    quest.onFishCaught() — in that order, stores never call each other
+    directly (no world-store step: v1's useWorldStore holds only the
+    day/night phase, nothing a catch needs to update)
   → persistence.ts serializes player/inventory/quest/world stores (not
     fishing, which is transient) as { version: 1, data } to a single
     localStorage key, debounced AND flushed on visibilitychange/beforeunload
@@ -158,7 +173,15 @@ around the whole scene — a single missing asset shouldn't blank the whole
 island) paired with a `<Suspense>` loading state, falling back to the
 `fallbackShape` (procedural box geometry) on load failure. This is required
 because drei's `useGLTF` is Suspense-based and throws on failure — a
-try/catch around it does not work.
+try/catch around it does not work. `<ErrorBoundary>` is not a React
+built-in; pull in `react-error-boundary` (or write a small class component)
+at implementation start.
+
+`QuestGiver.tsx` (the one v1 NPC) follows the same proximity-trigger
+pattern as `FishingSpot.tsx`: a static GLB + trigger volume, no AI/movement.
+Its "Talk" interaction opens `DialoguePanel.tsx`, which reads quest state
+from `useQuestStore` and has no knowledge of fishing/inventory internals —
+same isolation contract as every other component here.
 
 Asset source for v1: one CC0 low-poly GLB pack (Kenney or Quaternius),
 picked at implementation start. Character animation (idle/walk) is in v1
@@ -197,9 +220,10 @@ UI containers use `pointer-events: none` with interactive children set to
   (`useInventoryStore.getState().addFish(x)` then assert) — no React
   needed. Every store implements `reset()` so tests don't leak state
   across each other.
-- **Data-integrity test**: every fish/bait/rod ID referenced in
-  `quests.ts`/`rods.ts` resolves in `fish.ts`. Moves a runtime guard
-  (Section 7) into a test-time guarantee.
+- **Data-integrity test**: every fish/rod ID referenced in `quests.ts` and
+  every fish's `minRod` resolves against `rods.ts` — moves a runtime guard
+  (Section 7) into a test-time guarantee. No bait IDs to check (bait is
+  fenced out of v1).
 - **No automated visual/3D tests for v1** — disproportionate cost for a
   solo, no-deadline scope. Verification is manual per milestone: run dev
   server, walk the island, catch a fish, reload, confirm save persisted.
