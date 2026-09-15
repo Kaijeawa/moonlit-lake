@@ -322,6 +322,10 @@ git commit -m "Add Island component rendering merged terrain geometry"
 ```tsx
 // src/game/world/Water.tsx
 import { MeshReflectorMaterial } from '@react-three/drei'
+// Type-only import so `<mesh>`/`<planeGeometry>` JSX intrinsics type-check
+// even if this file is compiled before anything else in the program has
+// imported @react-three/fiber (see Task 3's fix for why this is needed).
+import type {} from '@react-three/fiber'
 
 export function Water() {
   return (
