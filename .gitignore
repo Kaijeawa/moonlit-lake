@@ -2,3 +2,31 @@ node_modules/
 dist/
 *.local
 .DS_Store
+
+# secrets — never push
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+netlify.toml.local
+.netlify/
+
+# editor/OS junk
+.vscode/
+.idea/
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+
+# build/test junk
+coverage/
+.vite/
+*.tsbuildinfo
+
+# this plan's scratch workspace (SDD ledger/briefs/reviews — not part of the shipped project)
+.superpowers/
