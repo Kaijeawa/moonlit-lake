@@ -782,6 +782,84 @@ user file.
 
 ---
 
+### Task 4d: Lake-style water (user reference screenshots, 2026-09-16)
+
+Target look (user's reference): deep saturated blue, wavy reflections of
+the island/player, slight transparency so the cliff blocks read under the
+surface. No sky texture — it fought the reflection.
+
+**Files:**
+- Add: `public/water-noise.png` (already generated: 256² tileable noise,
+  red channel drives drei's `distortionMap`)
+- Delete: `public/sky.png`
+- Modify: `src/App.tsx` — remove the `useTexture('/sky.png')` call, the
+  `sky.colorSpace` line and `<primitive attach="background" …/>`; keep
+  `<Suspense>` (Water now suspends on its own texture); drop imports that
+  become unused (`useTexture`, and `THREE` if nothing else uses it).
+- Modify: `src/game/world/Water.tsx` — full replacement:
+
+```tsx
+// src/game/world/Water.tsx
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { MeshReflectorMaterial, useTexture } from '@react-three/drei'
+import * as THREE from 'three'
+
+// Cliffs span y 0..1; 0.5 submerges the lower half so they read through
+// the surface like the reference. Spawn/spot/click targets are all at y = 1.
+const WATER_LEVEL = 0.5
+const RIPPLE_SPEED = 0.03
+
+export function Water() {
+  const noise = useTexture('/water-noise.png', (t) => {
+    t.wrapS = t.wrapT = THREE.RepeatWrapping
+    t.repeat.set(6, 6)
+  })
+  const t = useRef(0)
+
+  useFrame((_, delta) => {
+    t.current += delta * RIPPLE_SPEED
+    noise.offset.set(t.current, t.current * 0.7)
+  })
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, WATER_LEVEL, 0]}>
+      <planeGeometry args={[60, 60]} />
+      <MeshReflectorMaterial
+        color="#2f6db5"
+        mirror={0.55}
+        mixStrength={4}
+        mixBlur={0.6}
+        blur={[200, 60]}
+        resolution={1024}
+        distortion={0.35}
+        distortionMap={noise}
+        roughness={0.35}
+        metalness={0.15}
+        transparent
+        opacity={0.85}
+        depthScale={0.6}
+        minDepthThreshold={0.6}
+        maxDepthThreshold={1.2}
+      />
+    </mesh>
+  )
+}
+```
+
+Knobs, in order of visual impact if the screenshot is off: `mirror` (0.4–0.7,
+how much scene shows), `distortion` (0.2–0.6, wave strength), `color`
+(keep saturated blue), `opacity` (0.8–0.9). Do not add fog or a sky.
+
+- [ ] Gate: `npx tsc -p tsconfig.app.json --noEmit && npm run build`,
+  `npm test`. `$B` screenshots: rich blue water, island/capsule reflected
+  with wavy edges, cliff base visible under the surface; two frames ~1 s
+  apart show the ripple moved. Stop the dev server.
+- [ ] Commit: `git add public/water-noise.png src/App.tsx src/game/world/Water.tsx && git rm public/sky.png`
+  `git commit -m "Lake-style water: distorted reflections, transparency, no sky"`
+
+---
+
 ### Task 5: Fishing spot and proximity trigger
 
 **Files:**
