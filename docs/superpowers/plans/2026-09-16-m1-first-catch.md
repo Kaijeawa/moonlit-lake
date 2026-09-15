@@ -860,6 +860,56 @@ how much scene shows), `distortion` (0.2–0.6, wave strength), `color`
 
 ---
 
+### Task 4e: Sky image → flat colour; island sits in the water (user, 2026-09-16)
+
+Two small user requests. Lighting, water material and camera are NOT
+touched.
+
+**Files:**
+- Modify: `src/App.tsx` — remove only the sky *image*: delete
+  `const sky = useTexture('/sky.png')`, `sky.colorSpace = …`, and
+  `<primitive attach="background" object={sky} />`; in their place put
+  `<color attach="background" args={['#cfe8ee']} />` as the first child of
+  `Scene`'s fragment (pale sky-blue — keeps the water reflection bright
+  instead of black). Drop imports that become unused (`useTexture`,
+  and `THREE` only if nothing else uses it). KEEP `<Suspense>`.
+- Delete: `public/sky.png` (`git rm`).
+- Modify: `src/data/island.ts` — the island looks like it floats because
+  tiles span y 0..1 and the water is at -0.2. Extend each tile one layer
+  down so it sits in the water; the TOP stays at y = 1 so spawn, spot,
+  and click targets are unchanged:
+
+```ts
+// in buildIslandGeometry, replace the two box lines:
+const depth = tile.height + 1 // one extra layer below the waterline
+const box = new THREE.BoxGeometry(1, depth, 1)
+box.translate(tile.x, tile.height - depth / 2, tile.z)
+```
+  (Top face = `tile.height - depth/2 + depth/2 = tile.height` = 1; bottom
+  = -1.) `island.test.ts` needs no change: vertex count per tile is still
+  24 and the x-bound test is unaffected. Add one assertion to the
+  positioning test to pin the new contract:
+
+```ts
+    // top face stays at y = height, bottom extends one layer below y = 0
+    let maxY = -Infinity, minY = Infinity
+    for (let i = 0; i < position.count; i++) {
+      maxY = Math.max(maxY, position.getY(i)); minY = Math.min(minY, position.getY(i))
+    }
+    expect(maxY).toBeCloseTo(1)
+    expect(minY).toBeCloseTo(-1)
+```
+
+- [ ] Gate: `npx tsc -p tsconfig.app.json --noEmit && npm run build`,
+  `npm test` (all green, island test count unchanged). `$B` screenshot:
+  same lighting as before, plain pale-blue reflection instead of clouds,
+  cliff faces continue below the waterline (no visible gap/shadow band
+  between island and water).
+- [ ] Commit: `git add src/App.tsx src/data/island.ts src/data/island.test.ts && git rm -q public/sky.png`
+  `git commit -m "Flat sky colour instead of image; island extends below the waterline"`
+
+---
+
 ### Task 5: Fishing spot and proximity trigger
 
 **Files:**
