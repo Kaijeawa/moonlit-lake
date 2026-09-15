@@ -68,7 +68,14 @@ Vitest) plus `zustand` (already installed in M0, unused until now).
   `verbatimModuleSyntax` is on — type-only imports must use `import type`.
 - `noUnusedLocals`/`noUnusedParameters` are on — never leave an unused
   import (it is a build error, not a warning).
-- Build gate before every commit: `npx tsc --noEmit && npm run build`.
+- **Type-check with `npx tsc -p tsconfig.app.json --noEmit`, never bare
+  `npx tsc --noEmit`.** The root `tsconfig.json` is a solution file
+  (`files: []` + references), so bare `tsc --noEmit` type-checks nothing
+  and exits 0 unconditionally (verified 2026-09-16 by injecting a type
+  error). Wherever a task step below says `npx tsc --noEmit`, run the
+  `-p tsconfig.app.json` form instead.
+- Build gate before every commit: `npx tsc -p tsconfig.app.json --noEmit && npm run build`
+  (`npm run build` runs `tsc -b`, which is the authoritative check).
 - `strict: true` is on in both tsconfigs (set in M0) — all new code must
   satisfy it, not silently disable it.
 - Every commit message ends with the line
@@ -370,7 +377,7 @@ Expected: PASS, all 3 tests green.
 
 - [ ] **Step 4: Run the build gate**
 
-Run: `npx tsc --noEmit`
+Run: `npx tsc -p tsconfig.app.json --noEmit`
 Expected: exit 0.
 
 - [ ] **Step 5: Commit**
@@ -484,7 +491,7 @@ change and must not block M1 gameplay.
 
 - [ ] **Step 3: Run the build gate**
 
-Run: `npx tsc --noEmit`
+Run: `npx tsc -p tsconfig.app.json --noEmit`
 Expected: exit 0. (Nothing renders `Player` yet — Task 4 wires it in.)
 
 - [ ] **Step 4: Commit**
@@ -670,7 +677,7 @@ export default function App() {
 
 - [ ] **Step 5: Run the build gate**
 
-Run: `npx tsc --noEmit && npm run build`
+Run: `npx tsc -p tsconfig.app.json --noEmit && npm run build`
 Expected: both exit 0.
 
 - [ ] **Step 6: Manual verification**
@@ -760,7 +767,7 @@ import { FishingSpot } from './game/world/FishingSpot'
 
 - [ ] **Step 3: Run the build gate**
 
-Run: `npx tsc --noEmit && npm run build`
+Run: `npx tsc -p tsconfig.app.json --noEmit && npm run build`
 Expected: both exit 0.
 
 - [ ] **Step 4: Manual verification**
@@ -1169,7 +1176,7 @@ walking the player away from the spot mid-cast.
 
 - [ ] **Step 4: Run the build gate**
 
-Run: `npx tsc --noEmit && npm run build`
+Run: `npx tsc -p tsconfig.app.json --noEmit && npm run build`
 Expected: both exit 0.
 
 - [ ] **Step 5: Manual verification**
@@ -1489,7 +1496,7 @@ double-run is harmless.
 
 - [ ] **Step 6: Run the build gate**
 
-Run: `npx tsc --noEmit && npm run build`
+Run: `npx tsc -p tsconfig.app.json --noEmit && npm run build`
 Expected: both exit 0.
 
 - [ ] **Step 7: Manual verification (this is M1's visible-progress checkpoint)**
