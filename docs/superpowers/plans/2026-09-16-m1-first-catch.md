@@ -756,103 +756,29 @@ git commit -m "Add cloudy sky backdrop behind the island"
 
 ---
 
-### Task 4c: Water surface texture + higher water level (user-requested addition, 2026-09-16)
+### Task 4c: Raise water level + move spawn (revised 2026-09-16)
+
+History: first version applied the user's `water_spitesheet.zip` as a
+scrolling caustic texture and dropped the sky. The user saw it live and
+rejected it ("โคตรไม่สวย") — the Task 4b cloud-reflection water stays.
+`public/water-caustic.png` was discarded; the zip stays untracked as a
+user file.
 
 **Files:**
-- Add: `public/water-caustic.png` (already generated: 256×256 RGB, seamless
-  square tile un-skewed from the user's `water_spitesheet.zip` centre
-  diamond; zip verified clean — 6 genuine PNGs, standard chunks only, no
-  trailing data)
-- Modify: `src/game/world/Water.tsx`
-- Modify: `src/App.tsx` (remove the Task 4b sky — user decided sky
-  reflection + cell texture together looks wrong; water texture wins)
-- Delete: `public/sky.png`
+- Modify: `src/game/world/Water.tsx` — mesh `position` y `-0.2` → `0.55`
+  via `const WATER_LEVEL = 0.55` (island tops at y = 1, cliffs span
+  0..1; leaves ~0.45 of cliff above the waterline). All material props
+  unchanged from Task 4b.
+- Modify: `src/game/player/usePlayerController.ts` — `DOCK_SPAWN`
+  `(4,1,4)` → `(3,1,3)`: 2.0 from the dock spot at (5,3), outside its
+  1.5 trigger radius, so the "Fish" prompt no longer shows on load
+  (Task 5 review finding).
 
-**Interfaces:**
-- Consumes: drei `useTexture`, existing `MeshReflectorMaterial` props.
-- Produces: no new exports. `Water` keeps its zero-prop signature.
-
-- [ ] **Step 0: Remove the sky from `src/App.tsx`**
-
-Delete the `useTexture('/sky.png')` call, the `sky.colorSpace = …` line,
-the `<primitive attach="background" object={sky} />` element, and any
-import that becomes unused as a result (`useTexture`, possibly `THREE`).
-KEEP the `<Suspense fallback={null}>` around `<Scene>` — `Water` below
-still suspends on its own texture. Then `git rm public/sky.png`.
-
-- [ ] **Step 1: Replace `src/game/world/Water.tsx` with:**
-
-```tsx
-// src/game/world/Water.tsx
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
-import { MeshReflectorMaterial, useTexture } from '@react-three/drei'
-import * as THREE from 'three'
-
-// Island tops sit at y = 1 and cliffs span 0..1; 0.55 leaves ~0.45 of
-// cliff face showing above the waterline.
-const WATER_LEVEL = 0.55
-const TILE_REPEAT = 14
-const SCROLL_SPEED = 0.02 // tile-units per second
-
-export function Water() {
-  const caustic = useTexture('/water-caustic.png', (t) => {
-    t.wrapS = t.wrapT = THREE.RepeatWrapping
-    t.repeat.set(TILE_REPEAT, TILE_REPEAT)
-    t.colorSpace = THREE.SRGBColorSpace
-  })
-  const offset = useRef(0)
-
-  useFrame((_, delta) => {
-    offset.current += SCROLL_SPEED * delta
-    caustic.offset.set(offset.current, offset.current * 0.6)
-  })
-
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, WATER_LEVEL, 0]}>
-      <planeGeometry args={[60, 60]} />
-      <MeshReflectorMaterial
-        map={caustic}
-        mirror={0}
-        blur={[300, 100]}
-        resolution={512}
-        mixBlur={1}
-        mixStrength={2}
-        roughness={0.8}
-        depthScale={0}
-        color="#8fd8ec"
-        metalness={0.1}
-      />
-    </mesh>
-  )
-}
-```
-
-Why these values: the look is now texture + tint, not a mirror —
-`mirror` 0 and `mixStrength` 2 keep only a faint reflection of the island
-cliffs/player for grounding; `resolution` halved since the reflection is
-barely visible; `color` lightened toward the tile's own cyan so
-`map × color` doesn't go muddy. `useTexture` suspends — `Water` renders
-inside the `<Suspense>` that wraps `Scene`, so no new boundary is needed.
-
-- [ ] **Step 2: Gate + visual check**
-
-`npx tsc -p tsconfig.app.json --noEmit && npm run build`, `npm test`
-(19/19). `npm run dev` + gstack `$B` screenshot: water should show the
-cyan cell pattern (no clouds), visibly higher on the cliffs than before
-(about half the cliff face covered). Take two screenshots ~1 s apart and
-confirm the pattern has drifted (scroll works). If the pattern is
-washed out, try `mixStrength={0}` and report both.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add public/water-caustic.png src/game/world/Water.tsx src/App.tsx
-git commit -m "Replace sky reflection with scrolling water texture, raise water level"
-```
-(`git rm public/sky.png` from Step 0 is already staged.)
-
-Do not commit `water_spitesheet.zip` (user's source file, stays untracked).
+- [ ] Gate: `npx tsc -p tsconfig.app.json --noEmit && npm run build`,
+  `npm test`; `$B` screenshot: same water look as 4b, higher on the
+  cliffs, capsule not on the yellow disc.
+- [ ] Commit: `git add src/game/world/Water.tsx src/game/player/usePlayerController.ts`
+  `git commit -m "Raise water level and move spawn off the fishing spot"`
 
 ---
 
