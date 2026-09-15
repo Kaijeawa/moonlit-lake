@@ -696,6 +696,65 @@ git commit -m "Wire click-to-move raycast and lerped camera follow"
 
 ---
 
+### Task 4b: Sky backdrop (user-requested addition, 2026-09-16)
+
+**Files:**
+- Add: `public/sky.png` (already placed; 700×490 RGB, flat image — not an equirectangular panorama)
+- Modify: `src/App.tsx` (Canvas background + fog)
+
+**Interfaces:**
+- Consumes: the `<Canvas>` and `Scene` from Task 4.
+- Produces: a fixed sky backdrop behind the island. No new exports.
+
+Why a backdrop and not a skybox: the camera is locked (no rotation, spec
+Section 3), so a flat image fitted to the viewport never shows a seam or
+parallax mismatch, and it costs zero draw calls. A cube/equirect skybox
+would need a panorama the image isn't.
+
+- [ ] **Step 1: Make the GL clear transparent and put the image behind it**
+
+In `src/App.tsx`, change the `<Canvas>` element to:
+
+```tsx
+<Canvas
+  shadows
+  gl={{ alpha: true }}
+  style={{
+    width: '100vw',
+    height: '100vh',
+    background: 'url(/sky.png) center / cover no-repeat',
+  }}
+>
+```
+
+- [ ] **Step 2: Add a soft fog so the island edge blends into the sky**
+
+Inside `Scene`'s fragment, before `<IsoCamera />`:
+
+```tsx
+<fog attach="fog" args={['#dfe9ec', 22, 48]} />
+```
+
+`#dfe9ec` is a pale cloud-white sampled from the image's cloud tones; near
+22 / far 48 keeps the island (radius 6, camera distance 14) fully crisp
+and only softens the far water. Do not tint the island itself.
+
+- [ ] **Step 3: Gate + visual check**
+
+Run `npx tsc -p tsconfig.app.json --noEmit && npm run build`, then
+`npm run dev` and screenshot via gstack browse: the image should fill the
+viewport behind the island with no black/white bars, and the far water
+should fade toward the cloud tone.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add public/sky.png src/App.tsx
+git commit -m "Add cloudy sky backdrop behind the island"
+```
+
+---
+
 ### Task 5: Fishing spot and proximity trigger
 
 **Files:**
