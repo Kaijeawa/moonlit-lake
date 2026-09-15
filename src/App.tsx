@@ -40,6 +40,7 @@ function Scene({ movementLocked }: { movementLocked: boolean }) {
 
   return (
     <>
+      <fog attach="fog" args={['#dfe9ec', 22, 48]} />
       <IsoCamera targetRef={positionRef} />
       <ambientLight intensity={0.6} />
       <directionalLight position={[10, 15, 5]} intensity={1.2} castShadow />
@@ -58,7 +59,15 @@ export default function App() {
   }
 
   return (
-    <Canvas shadows style={{ width: '100vw', height: '100vh' }}>
+    <Canvas
+      shadows
+      gl={{ alpha: true }}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        background: 'url(/sky.png) center / cover no-repeat',
+      }}
+    >
       <Scene movementLocked={false} />
     </Canvas>
   )
