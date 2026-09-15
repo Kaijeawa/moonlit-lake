@@ -18,6 +18,7 @@ export function IsoCamera() {
       fov={40}
       near={0.1}
       far={200}
+      onUpdate={(camera) => camera.lookAt(0, 0, 0)}
     />
   )
 }
