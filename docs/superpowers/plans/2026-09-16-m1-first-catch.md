@@ -756,7 +756,7 @@ git commit -m "Add cloudy sky backdrop behind the island"
 
 ---
 
-### Task 4c: Raise water level + move spawn (revised 2026-09-16)
+### Task 4c: Move spawn off the fishing spot (revised 2026-09-16)
 
 History: first version applied the user's `water_spitesheet.zip` as a
 scrolling caustic texture and dropped the sky. The user saw it live and
@@ -765,7 +765,7 @@ rejected it ("โคตรไม่สวย") — the Task 4b cloud-reflection 
 user file.
 
 **Files:**
-- Modify: `src/game/world/Water.tsx` — mesh `position` y `-0.2` → `0.55`
+- ~~Water level~~ — user then decided the level stays at -0.2 (2026-09-16); `Water.tsx` untouched. (was: mesh `position` y `-0.2` → `0.55`
   via `const WATER_LEVEL = 0.55` (island tops at y = 1, cliffs span
   0..1; leaves ~0.45 of cliff above the waterline). All material props
   unchanged from Task 4b.
@@ -777,8 +777,8 @@ user file.
 - [ ] Gate: `npx tsc -p tsconfig.app.json --noEmit && npm run build`,
   `npm test`; `$B` screenshot: same water look as 4b, higher on the
   cliffs, capsule not on the yellow disc.
-- [ ] Commit: `git add src/game/world/Water.tsx src/game/player/usePlayerController.ts`
-  `git commit -m "Raise water level and move spawn off the fishing spot"`
+- [ ] Commit: `git add src/game/player/usePlayerController.ts`
+  `git commit -m "Move spawn off the fishing spot"`
 
 ---
 
