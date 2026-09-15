@@ -1,6 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
+import * as THREE from 'three'
 import type { Vector3 } from 'three'
 import { Island } from './game/world/Island'
 import { Water } from './game/world/Water'
@@ -24,6 +26,9 @@ const WALKABLE_NORMAL_Y = 0.7
 
 function Scene({ movementLocked }: { movementLocked: boolean }) {
   const { positionRef, setTarget } = usePlayerController()
+  // Sky lives inside the scene (not CSS) so the reflective water mirrors it.
+  const sky = useTexture('/sky.png')
+  sky.colorSpace = THREE.SRGBColorSpace
 
   const handleGroundClick = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
@@ -40,7 +45,7 @@ function Scene({ movementLocked }: { movementLocked: boolean }) {
 
   return (
     <>
-      <fog attach="fog" args={['#dfe9ec', 22, 48]} />
+      <primitive attach="background" object={sky} />
       <IsoCamera targetRef={positionRef} />
       <ambientLight intensity={0.6} />
       <directionalLight position={[10, 15, 5]} intensity={1.2} castShadow />
@@ -59,16 +64,10 @@ export default function App() {
   }
 
   return (
-    <Canvas
-      shadows
-      gl={{ alpha: true }}
-      style={{
-        width: '100vw',
-        height: '100vh',
-        background: 'url(/sky.png) center / cover no-repeat',
-      }}
-    >
-      <Scene movementLocked={false} />
+    <Canvas shadows style={{ width: '100vw', height: '100vh' }}>
+      <Suspense fallback={null}>
+        <Scene movementLocked={false} />
+      </Suspense>
     </Canvas>
   )
 }
