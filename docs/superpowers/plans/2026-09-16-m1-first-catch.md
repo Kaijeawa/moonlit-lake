@@ -756,6 +756,96 @@ git commit -m "Add cloudy sky backdrop behind the island"
 
 ---
 
+### Task 4c: Water surface texture + higher water level (user-requested addition, 2026-09-16)
+
+**Files:**
+- Add: `public/water-caustic.png` (already generated: 256×256 RGB, seamless
+  square tile un-skewed from the user's `water_spitesheet.zip` centre
+  diamond; zip verified clean — 6 genuine PNGs, standard chunks only, no
+  trailing data)
+- Modify: `src/game/world/Water.tsx`
+
+**Interfaces:**
+- Consumes: drei `useTexture`, existing `MeshReflectorMaterial` props.
+- Produces: no new exports. `Water` keeps its zero-prop signature.
+
+- [ ] **Step 1: Replace `src/game/world/Water.tsx` with:**
+
+```tsx
+// src/game/world/Water.tsx
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { MeshReflectorMaterial, useTexture } from '@react-three/drei'
+import * as THREE from 'three'
+
+// Island tops sit at y = 1 and cliffs span 0..1; 0.55 leaves ~0.45 of
+// cliff face showing above the waterline.
+const WATER_LEVEL = 0.55
+const TILE_REPEAT = 14
+const SCROLL_SPEED = 0.02 // tile-units per second
+
+export function Water() {
+  const caustic = useTexture('/water-caustic.png', (t) => {
+    t.wrapS = t.wrapT = THREE.RepeatWrapping
+    t.repeat.set(TILE_REPEAT, TILE_REPEAT)
+    t.colorSpace = THREE.SRGBColorSpace
+  })
+  const offset = useRef(0)
+
+  useFrame((_, delta) => {
+    offset.current += SCROLL_SPEED * delta
+    caustic.offset.set(offset.current, offset.current * 0.6)
+  })
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, WATER_LEVEL, 0]}>
+      <planeGeometry args={[60, 60]} />
+      <MeshReflectorMaterial
+        map={caustic}
+        mirror={0.4}
+        blur={[300, 100]}
+        resolution={1024}
+        mixBlur={1}
+        mixStrength={6}
+        roughness={0.7}
+        depthScale={1}
+        minDepthThreshold={0.85}
+        color="#7fd0e6"
+        metalness={0.2}
+      />
+    </mesh>
+  )
+}
+```
+
+Why these values: `mixStrength` 40 → 6 so the caustic map and tint show
+instead of being drowned by the reflection; `color` lightened toward the
+tile's own cyan so `map × color` doesn't go muddy; `mirror` 0.4 keeps the
+cloud reflection from Task 4b. `useTexture` suspends — `Water` already
+renders inside the `<Suspense>` that wraps `Scene` (Task 4b), so no new
+boundary is needed.
+
+- [ ] **Step 2: Gate + visual check**
+
+`npx tsc -p tsconfig.app.json --noEmit && npm run build`, `npm test`
+(19/19). `npm run dev` + gstack `$B` screenshot: water should show the
+cyan cell pattern with soft cloud reflection, visibly higher on the
+cliffs than before (about half the cliff face covered). Take two
+screenshots ~1 s apart and confirm the pattern has drifted (scroll
+works). If the pattern is invisible, try `mixStrength={2}` and report
+both.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add public/water-caustic.png src/game/world/Water.tsx
+git commit -m "Add scrolling water texture and raise the water level"
+```
+
+Do not commit `water_spitesheet.zip` (user's source file, stays untracked).
+
+---
+
 ### Task 5: Fishing spot and proximity trigger
 
 **Files:**
