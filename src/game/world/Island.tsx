@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import * as THREE from 'three'
+import type {} from '@react-three/fiber'
 import { ISLAND_GRID, buildIslandGeometry } from '../../data/island'
 
 export function Island() {
