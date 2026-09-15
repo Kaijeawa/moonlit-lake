@@ -3,9 +3,10 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const MOVE_SPEED = 4 // world units per second
-// Ground-contact point on the island surface (y = 1). Tile (4, 4) is on
-// the island (dist 5.66 ≤ 6). Not persisted — every load spawns here.
-const DOCK_SPAWN = new THREE.Vector3(4, 1, 4)
+// Ground-contact point on the island surface (y = 1). Tile (3, 3) is on
+// the island (dist 4.24 ≤ 6) and 2.0 from the dock fishing spot at (5, 3),
+// outside its 1.5 trigger radius. Not persisted — every load spawns here.
+const DOCK_SPAWN = new THREE.Vector3(3, 1, 3)
 const ARRIVE_EPSILON = 0.05
 
 export function usePlayerController() {
