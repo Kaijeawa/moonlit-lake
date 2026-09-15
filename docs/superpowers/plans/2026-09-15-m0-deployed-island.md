@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Get a live Netlify URL showing a walkable voxel island with a
+**Goal:** Get a live Vercel URL showing a walkable voxel island with a
 reflective water plane and a fixed ISO-style camera. No gameplay yet — this
 is the visible-progress checkpoint the spec requires before any fishing
 mechanics are built.
@@ -11,7 +11,10 @@ mechanics are built.
 from a plain-data grid (`data/island.ts`) into one merged `BufferGeometry`
 with vertex colors — a single draw call, no per-tile meshes. A fixed
 perspective camera follows nothing yet (no player in M0) but is positioned
-at the spec's locked ~50° elevation. Deployed as a static site to Netlify.
+at the spec's locked ~50° elevation. Deployed as a static site to Vercel
+(picked over Netlify for cheaper future serverless-function DX if a later
+milestone ever needs a backend endpoint, and faster iterative deploys for a
+solo no-deadline project).
 
 **Tech Stack:** Vite, React 19, TypeScript, `@react-three/fiber@9`,
 `@react-three/drei`, `three`, `zustand` (installed now, used starting M1),
@@ -524,34 +527,35 @@ git commit -m "Assemble M0 scene: island, water, ISO camera, WebGL fallback"
 
 ---
 
-### Task 7: Deploy to Netlify
+### Task 7: Deploy to Vercel
 
 **Files:**
-- Create: `netlify.toml`
+- Create: `vercel.json`
 
 **Interfaces:**
 - Consumes: `dist/` output from `npm run build` (Task 1).
 - Produces: a live public URL — the actual M0 deliverable.
 
-- [ ] **Step 1: Add Netlify build config**
+- [ ] **Step 1: Add Vercel build config**
 
-```toml
-# netlify.toml
-[build]
-  command = "npm run build"
-  publish = "dist"
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
+}
 ```
 
 - [ ] **Step 2: Commit the config**
 
 ```bash
-git add netlify.toml
-git commit -m "Add Netlify build configuration"
+git add vercel.json
+git commit -m "Add Vercel build configuration"
 ```
 
 - [ ] **Step 3: Push to a GitHub remote**
 
-Netlify's git-based deploy needs a remote. If `D:\moonlit-lake` has no
+Vercel's git-based deploy needs a remote. If `D:\moonlit-lake` has no
 remote yet, ask the user which GitHub account/org to push under before
 running `git remote add` — do not assume an identity (the user's DevOps
 project uses a deliberately separate `Kaijeaw` identity from their personal
@@ -562,16 +566,17 @@ git remote add origin <url-confirmed-with-user>
 git push -u origin master
 ```
 
-- [ ] **Step 4: Connect the Netlify site**
+- [ ] **Step 4: Connect the Vercel project**
 
-This step needs the user's Netlify account — hand off with instructions
+This step needs the user's Vercel account — hand off with instructions
 rather than attempting it programmatically:
 
-1. Go to https://app.netlify.com → "Add new site" → "Import an existing
-   project" → pick the `moonlit-lake` GitHub repo.
-2. Build command and publish directory are already set via
-   `netlify.toml` — confirm they show `npm run build` / `dist` and deploy.
-3. Netlify assigns a `*.netlify.app` URL. Note it down — this is the M0
+1. Go to https://vercel.com/new → "Import Git Repository" → pick the
+   `moonlit-lake` GitHub repo.
+2. Framework preset should auto-detect as Vite; build command/output
+   directory are already set via `vercel.json` — confirm they show
+   `npm run build` / `dist` and deploy.
+3. Vercel assigns a `*.vercel.app` URL. Note it down — this is the M0
    deliverable to open and confirm.
 
 - [ ] **Step 5: Verify the live URL**
@@ -588,12 +593,13 @@ saved to project memory for future reference.
 
 ## Plan Self-Review
 
-**Spec coverage:** M0's spec line ("Deployed Netlify URL. Walkable voxel
-island, water plane, ISO camera. No gameplay yet.") is covered by Tasks
+**Spec coverage:** M0's spec line ("Deployed URL. Walkable voxel island,
+water plane, ISO camera. No gameplay yet." — hosting target changed from
+Netlify to Vercel post-approval, see Goal/Architecture) is covered by Tasks
 1–7. Terrain-is-one-draw-call (hard rule 3) is covered by Task 2's merged
 geometry. Camera lock (Section 3/5) is covered by Task 5. WebGL-unavailable
 handling (Section 7) is covered by Task 6. Build gate (Section 8) is
-exercised in Tasks 1, 6, and implicitly by Netlify's own build in Task 7.
+exercised in Tasks 1, 6, and implicitly by Vercel's own build in Task 7.
 Player, fishing, quests, NPC, shop, persistence are M1+ and correctly out
 of this plan.
 

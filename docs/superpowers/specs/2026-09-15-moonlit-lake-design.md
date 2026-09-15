@@ -21,7 +21,9 @@ full. This was flagged and reconfirmed twice before work began.
 - Three.js via `@react-three/fiber` (R3F) + `@react-three/drei`
 - Zustand (state management)
 - No backend for v1 — `localStorage` only
-- Deploy target: Netlify (static, matches Vite output)
+- Deploy target: Vercel (static, matches Vite output; changed from an
+  earlier Netlify default during M0 implementation — cheaper future
+  serverless-function DX if a later milestone needs a backend endpoint)
 
 Pin exact R3F/drei/Three versions at implementation start (verify React 19
 compatibility via context7 before scaffolding — do not assume last-known
@@ -242,7 +244,7 @@ UI containers use `pointer-events: none` with interactive children set to
 Each milestone ends in something openable in a browser — never a
 "stores + schema" checkpoint with nothing to look at.
 
-- **M0**: Deployed Netlify URL. Walkable voxel island, water plane, ISO
+- **M0**: Deployed Vercel URL. Walkable voxel island, water plane, ISO
   camera. No gameplay yet.
 - **M1**: One fishing spot, 3 fish species, working minigame, save/load
   round-trip.
