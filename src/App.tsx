@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import type { Vector3 } from 'three'
 import { Island } from './game/world/Island'
 import { Water } from './game/world/Water'
+import { Props } from './game/world/props/Props'
 import { FishingSpot } from './game/world/FishingSpot'
 import { IsoCamera } from './game/camera/IsoCamera'
 import { Player } from './game/player/Player'
@@ -55,6 +56,7 @@ function Scene({ movementLocked }: { movementLocked: boolean }) {
       <Island onClick={handleGroundClick} />
       <Water />
       <FishingSpot id="dock" position={[5, 1.05, 3]} playerPositionRef={positionRef} />
+      <Props />
       <Player positionRef={positionRef} />
     </>
   )
