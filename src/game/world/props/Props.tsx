@@ -1,4 +1,5 @@
 // src/game/world/props/Props.tsx
+import type { ThreeEvent } from '@react-three/fiber'
 import { PROPS } from '../../../data/props'
 import { Dock } from './Dock'
 import { Lantern } from './Lantern'
@@ -11,14 +12,14 @@ import { Flower } from './Flower'
 
 const SAKURA: [string, string, string] = ['#f2a7c9', '#f7bcd6', '#e88fc4']
 
-export function Props() {
+export function Props({ onGroundClick }: { onGroundClick?: (event: ThreeEvent<MouseEvent>) => void }) {
   return (
     <>
       {PROPS.map((p, i) => {
         const key = `${p.type}-${i}`
         switch (p.type) {
           case 'dock':
-            return <Dock key={key} x={p.x} z={p.z} rotation={p.rotation} />
+            return <Dock key={key} x={p.x} z={p.z} rotation={p.rotation} onClick={onGroundClick} />
           case 'lantern':
             return <Lantern key={key} x={p.x} z={p.z} />
           case 'treeRound':

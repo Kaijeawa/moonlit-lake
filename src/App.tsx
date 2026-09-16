@@ -56,7 +56,7 @@ function Scene({ movementLocked }: { movementLocked: boolean }) {
       <Island onClick={handleGroundClick} />
       <Water />
       <FishingSpot id="dock" position={[5, 1.05, 3]} playerPositionRef={positionRef} />
-      <Props />
+      <Props onGroundClick={handleGroundClick} />
       <Player positionRef={positionRef} />
     </>
   )
