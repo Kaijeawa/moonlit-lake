@@ -30,8 +30,9 @@ export const ISLAND_GRID: IslandTile[] = (() => {
  */
 export function buildIslandGeometry(grid: IslandTile[]): THREE.BufferGeometry {
   const geometries: THREE.BufferGeometry[] = grid.map((tile) => {
-    const box = new THREE.BoxGeometry(1, tile.height, 1)
-    box.translate(tile.x, tile.height / 2, tile.z)
+    const depth = tile.height + 1 // one extra layer below the waterline
+    const box = new THREE.BoxGeometry(1, depth, 1)
+    box.translate(tile.x, tile.height - depth / 2, tile.z)
 
     const color = new THREE.Color(tile.color)
     const vertexCount = box.getAttribute('position').count

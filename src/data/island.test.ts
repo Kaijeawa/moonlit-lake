@@ -29,5 +29,12 @@ describe('buildIslandGeometry', () => {
     for (let i = 0; i < position.count; i++) {
       expect(Math.abs(position.getX(i))).toBeLessThanOrEqual(0.5)
     }
+    // top face stays at y = height, bottom extends one layer below y = 0
+    let maxY = -Infinity, minY = Infinity
+    for (let i = 0; i < position.count; i++) {
+      maxY = Math.max(maxY, position.getY(i)); minY = Math.min(minY, position.getY(i))
+    }
+    expect(maxY).toBeCloseTo(1)
+    expect(minY).toBeCloseTo(-1)
   })
 })
