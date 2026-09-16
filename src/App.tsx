@@ -11,6 +11,8 @@ import { IsoCamera } from './game/camera/IsoCamera'
 import { Player } from './game/player/Player'
 import { usePlayerController } from './game/player/usePlayerController'
 import { WebGLFallback } from './WebGLFallback'
+import { HUD } from './ui/HUD'
+import { FishingBar } from './ui/FishingBar'
 
 function hasWebGL(): boolean {
   try {
@@ -60,16 +62,28 @@ function Scene({ movementLocked }: { movementLocked: boolean }) {
 
 export default function App() {
   const [webglOk] = useState(hasWebGL)
+  const [fishingSpotId, setFishingSpotId] = useState<string | null>(null)
 
   if (!webglOk) {
     return <WebGLFallback />
   }
 
+  // timeOfDay is hardcoded for M1; the day/night cycle is M3 scope.
   return (
-    <Canvas shadows style={{ width: '100vw', height: '100vh' }}>
-      <Suspense fallback={null}>
-        <Scene movementLocked={false} />
-      </Suspense>
-    </Canvas>
+    <>
+      <Canvas shadows style={{ width: '100vw', height: '100vh' }}>
+        <Suspense fallback={null}>
+          <Scene movementLocked={fishingSpotId !== null} />
+        </Suspense>
+      </Canvas>
+      <HUD onFish={setFishingSpotId} />
+      {fishingSpotId && (
+        <FishingBar
+          spotId={fishingSpotId}
+          timeOfDay="day"
+          onClose={() => setFishingSpotId(null)}
+        />
+      )}
+    </>
   )
 }
